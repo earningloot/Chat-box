@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatBox - Real-Time Chat</title>
+
+    <!-- Modern UI Styling -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+        }
+
+        /* Login Page */
+        #login-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #1c1e21;
+        }
+
+        .login-box {
+            background-color: #242526;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 350px;
+        }
+
+        .login-box h2 {
+            color: #e4e6eb;
+            margin-bottom: 20px;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            background-color: #3a3b3c;
+            color: #e4e6eb;
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            background-color: #0095f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Chat Interface */
+        #chat-page {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        #sidebar {
+            width: 30%;
+            background-color: #242526;
+            padding: 20px;
+            border-right: 1px solid #3a3b3c;
+        }
+
+        #sidebar h3 {
+            color: #e4e6eb;
+            margin-bottom: 10px;
+        }
+
+        #sidebar input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #3a3b3c;
+            border: none;
+            color: #e4e6eb;
+        }
+
+        #user-list li {
+            padding: 10px;
+            color: #e4e6eb;
+            background-color: #3a3b3c;
+            border-radius: 8px;
+            margin-top: 10px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        #user-list li:hover {
+            background-color: #4e4f50;
+        }
+
+        /* Chat Window */
+        #chat-window {
+            width: 70%;
+            display: flex;
+            flex-direction: column;
+            background-color: #18191a;
+        }
+
+        #chat-header {
+            padding: 15px;
+            background-color: #242526;
+            border-bottom: 1px solid #3a3b3c;
+            color: #e4e6eb;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        #chat-container {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .message {
+            padding: 10px 15px;
+            border-radius: 18px;
+            margin-bottom: 10px;
+            max-width: 60%;
+            word-wrap: break-word;
+        }
+
+        .sent {
+            background-color: #0095f6;
+            color: white;
+            align-self: flex-end;
+        }
+
+        .received {
+            background-color: #3a3b3c;
+            color: #e4e6eb;
+            align-self: flex-start;
+        }
+
+        /* Message Input */
+        #message-box {
+            display: flex;
+            padding: 15px;
+            background-color: #242526;
+        }
+
+        #message-input {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 20px;
+            border: none;
+            background-color: #3a3b3c;
+            color: #e4e6eb;
+        }
+
+        #message-box button {
+            margin-left: 10px;
+            padding: 10px 20px;
+            background-color: #0095f6;
+            color: white;
+            border: none;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Login Page -->
+<div id="login-page">
+    <div class="login-box">
+        <h2>Welcome to ChatBox</h2>
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button onclick="login()">Login</button>
+    </div>
+</div>
+
+<!-- Chat Interface -->
+<div id="chat-page" style="display: none;">
+    <div id="sidebar">
+        <h3>Chats</h3>
+        <input type="text" id="search-user" placeholder="Search user..." oninput="searchUser()">
+        <ul id="user-list"></ul>
+    </div>
+
+    <div id="chat-window">
+        <div id="chat-header">Start Chatting</div>
+        <div id="chat-container"></div>
+        <div id="message-box">
+            <input type="text" id="message-input" placeholder="Type a message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+    let currentUser = "";
+    let activeChatUser = "";
+
+    // Login Function
+    function login() {
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+
+        if (username && password) {
+            currentUser = username;
+            localStorage.setItem(username, JSON.stringify([]));
+            document.getElementById('login-page').style.display = 'none';
+            document.getElementById('chat-page').style.display = 'flex';
+            loadUserList();
+        } else {
+            alert("Enter both username and password.");
+        }
+    }
+
+    // Load Users
+    function loadUserList() {
+        const userList = document.getElementById('user-list');
+        userList.innerHTML = '';
+        Object.keys(localStorage).forEach(user => {
+            if (user !== currentUser) {
+                const li = document.createElement('li');
+                li.textContent = user;
+                li.onclick = () => openChat(user);
+                userList.appendChild(li);
+            }
+        });
+    }
+
+    // Open Chat
+    function openChat(user) {
+        activeChatUser = user;
+        document.getElementById('chat-header').innerText = `Chat with ${user}`;
+        loadMessages();
+    }
+
+    // Send Message
+    function sendMessage() {
+        const msg = document.getElementById('message-input').value.trim();
+        if (msg && activeChatUser) {
+            const chatData = JSON.parse(localStorage.getItem(currentUser)) || [];
+            chatData.push({ to: activeChatUser, message: msg, sender: currentUser });
+            localStorage.setItem(currentUser, JSON.stringify(chatData));
+            loadMessages();
+            document.getElementById('message-input').value = '';
+        }
+    }
+
+    // Load Messages
+    function loadMessages() {
+        const container = document.getElementById('chat-container');
+        container.innerHTML = '';
+    }
+</script>
+</body>
+</html>
