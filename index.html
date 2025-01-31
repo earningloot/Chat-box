@@ -167,7 +167,7 @@
         const colors = ['red', 'green'];
         const resultColor = colors[Math.floor(Math.random() * colors.length)];
         if (userBet === resultColor) {
-            balance += betAmount * 2;
+            balance += betAmount * 1.92;
             showResult("💵 Congratulations! You Won!", 'win');
         } else {
             showResult("❌️ Sorry! You Lost.", 'lose');
