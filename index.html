@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎨 Color Betting Game 🎨</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: linear-gradient(135deg, #1f1c2c, #928dab); color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .container { background: rgba(0, 0, 0, 0.9); padding: 30px; border-radius: 15px; box-shadow: 0 0 30px rgba(255, 255, 255, 0.2); width: 500px; text-align: center; }
+        h1 { font-size: 32px; color: #00e676; animation: glow 1s infinite alternate; }
+        @keyframes glow { from { text-shadow: 0 0 10px #00e676; } to { text-shadow: 0 0 20px #00ff99; } }
+        #walletBalance { font-size: 20px; margin: 10px 0; }
+        input[type="number"], input[type="password"] { padding: 10px; width: 100%; border-radius: 5px; margin-bottom: 10px; border: 2px solid #00e676; background: transparent; color: #fff; font-size: 16px; }
+        input[type="number"]::placeholder, input[type="password"]::placeholder { color: #aaa; }
+        button { width: 100%; padding: 10px; margin: 10px 0; font-size: 18px; font-weight: bold; border-radius: 10px; cursor: pointer; transition: 0.3s ease; background-color: #00e676; color: #000; border: none; }
+        button:hover { transform: scale(1.05); background-color: #00ff99; }
+        .btn-red { background-color: #e74c3c; color: #fff; }
+        .btn-green { background-color: #2ecc71; color: #fff; }
+        .btn-blue { background-color: #3498db; color: #fff; }
+        .btn-deposit { background-color: #f1c40f; color: #000; }
+        #timer { font-size: 22px; margin-top: 10px; }
+        #resultBanner, #placedBet { margin-top: 20px; padding: 10px; font-size: 18px; border-radius: 10px; }
+        .win { background-color: gold; color: black; animation: glowWin 1s infinite alternate; }
+        .lose { background-color: #7f8c8d; color: white; }
+        @keyframes glowWin { from { box-shadow: 0 0 10px gold; } to { box-shadow: 0 0 20px yellow; } }
+        #history { margin-top: 20px; max-height: 200px; overflow-y: auto; text-align: left; background-color: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 10px; }
+        .auth-container { display: flex; flex-direction: column; gap: 10px; }
+        .auth-container input, .auth-container button { width: 100%; }
+        .login-header { font-size: 24px; margin-bottom: 20px; color: #00e676; }
+    </style>
+</head>
+<body>
+<div class="container" id="authContainer">
+    <h1>💸Color Treading💸</h1>
+    <div class="login-header">Login to Play</div>
+    <div class="auth-container">
+        <input type="number" id="mobileNumber" placeholder="Mobile Number">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+    </div>
+</div>
+<div class="container" id="gameContainer" style="display: none;">
+    <h1>💸Color Treading💸</h1>
+    <div id="walletBalance">💰 Wallet: ₹<span id="balance">99</span></div>
+    <button class="btn-deposit" onclick="deposit()">Deposit</button>
+    <p>💸 Enter Bet Amount:</p>
+    <input type="number" id="betAmount" placeholder="Bet Amount">
+    <p>🎨 Choose a Color:</p>
+    <button class="btn-red" onclick="placeBet('red')">Red 🔴</button>
+    <button class="btn-green" onclick="placeBet('green')">Green 🟢</button>
+    <button class="btn-blue" onclick="placeBet('blue')">Blue 🔵</button>
+    <div id="timer">⏳ Time Left: 60s | Period: <span id="period">202501310329</span></div>
+    <div id="placedBet"></div>
+    <div id="resultBanner"></div>
+    <h3>📜 Game History</h3>
+    <div id="history"></div>
+</div>
+<script>
+    // Auth Functions
+    const authContainer = document.getElementById('authContainer');
+    const gameContainer = document.getElementById('gameContainer');
+
+    // Dummy backend storage (replace with actual backend API)
+    let users = {};
+
+    function login() {
+        const mobileNumber = document.getElementById('mobileNumber').value;
+        const password = document.getElementById('password').value;
+
+        // Check if user exists in the backend
+        if (users[mobileNumber]) {
+            if (users[mobileNumber].password === password) {
+                alert("Login successful!");
+                authContainer.style.display = 'none';
+                gameContainer.style.display = 'block';
+                balance = users[mobileNumber].balance || 99; // Load user's balance
+                updateWallet();
+            } else {
+                alert("Invalid password! Please try again.");
+            }
+        } else {
+            // Create new user
+            users[mobileNumber] = { password, balance: 99 };
+            alert("New account created! Welcome to the game.");
+            authContainer.style.display = 'none';
+            gameContainer.style.display = 'block';
+        }
+    }
+
+    // Game Logic
+    let timer = 60, userBet = null, betAmount = 0, balance = 99, interval, period = 1;
+
+    function getFormattedPeriod() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const date = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        return `${year}${month}${date}${hours}${minutes}`;
+    }
+
+    function startTimer() {
+        interval = setInterval(() => {
+            timer--;
+            document.getElementById('timer').innerText = `⏳ Time Left: ${timer}s | Period: ${getFormattedPeriod()}`;
+            if (timer === 0) {
+                clearInterval(interval);
+                generateResult();
+                timer = 60;
+                period++;
+                startTimer();
+            }
+        }, 1000);
+    }
+
+    function deposit() {
+        let amount = parseInt(prompt("Enter amount to deposit:"));
+        if (isNaN(amount) || amount <= 0) {
+            alert("Invalid amount! Please enter a positive number.");
+            return;
+        }
+        balance += amount;
+        updateWallet();
+    }
+
+    function placeBet(color) {
+        betAmount = parseInt(document.getElementById('betAmount').value);
+        if (isNaN(betAmount) || betAmount <= 0) {
+            alert("Please enter a valid bet amount!");
+            return;
+        }
+        if (betAmount > balance) {
+            alert("Insufficient balance!");
+            return;
+        }
+        userBet = color;
+        balance -= betAmount;
+        updateWallet();
+        document.getElementById('betAmount').value = "";
+        document.getElementById('placedBet').innerText = `📝 You placed bet on ${color === 'red' ? '🔴 Red' : color === 'green' ? '🟢 Green' : '🔵 Blue'}`;
+    }
+
+    function generateResult() {
+        const colors = ['red', 'green', 'blue'];
+        const resultColor = colors[Math.floor(Math.random() * colors.length)];
+        if (userBet === resultColor) {
+            const winningAmount = betAmount * 1.98;
+            balance += winningAmount;
+            showResult(`💵 Congratulations! You Won ₹${winningAmount.toFixed(2)}!`, 'win');
+        } else {
+            showResult("❌️ Sorry! You Lost.", 'lose');
+        }
+        updateWallet();
+        updateHistory(resultColor);
+        userBet = null;
+        document.getElementById('placedBet').innerText = "";
+        document.getElementById('period').innerText = getFormattedPeriod();
+    }
+
+    function updateHistory(color) {
+        const historyDiv = document.getElementById('history');
+        const entry = document.createElement('div');
+        entry.innerHTML = `Period ${period}: Result - ${color === 'red' ? '🔴 Red' : color === 'green' ? '🟢 Green' : '🔵 Blue'}`;
+        historyDiv.prepend(entry);
+    }
+
+    function showResult(message, resultClass) {
+        const resultBanner = document.getElementById('resultBanner');
+        resultBanner.innerText = message;
+        resultBanner.className = resultClass;
+        setTimeout(() => resultBanner.innerText = "", 3000);
+    }
+
+    function updateWallet() {
+        document.getElementById('balance').innerText = balance;
+    }
+
+    startTimer();
+</script>
+</body>
+</html>
