@@ -19,12 +19,16 @@
             padding: 20px;
             border-radius: 15px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            width: 350px;
+            width: 450px;
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
             text-align: center;
             animation: fadeIn 1s ease-in-out;
         }
         .chat-box {
-            height: 250px;
+            height: 350px;
             overflow-y: scroll;
             border: 1px solid #ccc;
             padding: 10px;
@@ -32,6 +36,7 @@
             border-radius: 10px;
             background-color: #fafafa;
             animation: slideIn 1s ease;
+            flex-grow: 1;
         }
         .chat-input {
             width: calc(100% - 22px);
@@ -100,9 +105,9 @@
 <div class="chat-container">
     <h2>Chatting AI</h2>
     <div class="chat-box" id="chat-box">
-        <p>AI: Hello! How can I help you today?</p>
+        <p>AI: नमस्ते में शिवांश ओझा के द्वारा बनाया गया ऐ रोबोट हूं</p>
     </div>
-    <input type="text" class="chat-input" id="chat-input" placeholder="Type your message here...">
+    <input type="text" class="chat-input" id="chat-input" placeholder="यहां अपना सवाल लिखें...">
     <button class="chat-button" onclick="sendMessage()">Send</button>
     <button class="chat-button" onclick="startListening()">Speak</button>
 </div>
@@ -131,14 +136,14 @@
     function sendMessage() {
         const message = chatInput.value.trim();
         if (message !== '') {
-            addMessage(message, 'You');
+            addMessage(message, 'आप');
             chatInput.value = '';
             getAIResponse(message);
         }
     }
 
     function getAIResponse(message) {
-        let response = "I'm sorry, I don't know that.";
+        let response = "मुझे माफ करें मेरी ट्रेनिंग अभी चल रही है।";
         // Loop through all questions in the chatData.js file
         for (const question in chatData) {
             if (message.toLowerCase().includes(question)) {
@@ -154,7 +159,7 @@
 
     function startListening() {
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        recognition.lang = 'en-US';
+        recognition.lang = 'hi-IN';
         recognition.onresult = function(event) {
             const transcript = event.results[0][0].transcript;
             chatInput.value = transcript;
@@ -165,7 +170,7 @@
 
     function speak(text) {
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
+        utterance.lang = 'hi-IN';
         window.speechSynthesis.speak(utterance);
     }
 </script>
