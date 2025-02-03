@@ -7,10 +7,10 @@
     <style>
         /* Global Styles */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
-            background: linear-gradient(45deg, #121212, #282828);
+            background: linear-gradient(45deg, #1a1a1a, #2c3e50);
             color: white;
             text-align: center;
             overflow-x: hidden;
@@ -19,9 +19,9 @@
         /* Header Section */
         .header {
             background: #ff4757;
-            padding: 12px;
+            padding: 15px;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
             position: fixed;
             width: 100%;
@@ -31,55 +31,43 @@
         }
         .header h1 {
             margin: 0;
-            font-size: 18px;
+            font-size: 20px;
             animation: fadeIn 1s ease-in-out;
-        }
-        .buttons {
-            display: flex;
-            gap: 8px;
-        }
-        .btn {
-            background: white;
-            color: #ff4757;
-            padding: 8px 14px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 14px;
-            transition: transform 0.3s ease, background 0.3s ease;
-        }
-        .btn:hover {
-            transform: scale(1.05);
-            background: #f1f2f6;
         }
 
         /* Main Content */
         .container {
-            margin-top: 70px;
-            padding: 15px;
+            margin-top: 80px;
+            padding: 20px;
         }
         .game-image {
             width: 90%;
             max-width: 400px;
-            border-radius: 10px;
-            margin: 15px 0;
-            box-shadow: 0 0 15px rgba(255, 71, 87, 0.8);
+            border-radius: 15px;
+            margin: 20px 0;
+            box-shadow: 0 0 20px rgba(255, 71, 87, 0.8);
             animation: float 3s ease-in-out infinite;
         }
 
-        /* Register Button */
-        .register-btn {
+        /* Buttons Section */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .btn {
             background: #ff4757;
             color: white;
             padding: 12px 25px;
             font-size: 16px;
             border: none;
-            border-radius: 5px;
+            border-radius: 30px;
             cursor: pointer;
             transition: 0.3s;
             box-shadow: 0 4px 6px rgba(255, 71, 87, 0.3);
         }
-        .register-btn:hover {
+        .btn:hover {
             background: #ff6b81;
             transform: translateY(-3px);
         }
@@ -87,9 +75,9 @@
         /* Information Box */
         .info {
             background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px auto;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px auto;
             width: 90%;
             max-width: 450px;
             animation: slideIn 1s ease-in-out;
@@ -145,13 +133,9 @@
         /* Responsive Design */
         @media (max-width: 600px) {
             .header h1 {
-                font-size: 16px;
+                font-size: 18px;
             }
             .btn {
-                padding: 6px 12px;
-                font-size: 12px;
-            }
-            .register-btn {
                 padding: 10px 20px;
                 font-size: 14px;
             }
@@ -166,10 +150,6 @@
     <!-- Header Section -->
     <div class="header">
         <h1>🎰 Bounty Game 🎰</h1>
-        <div class="buttons">
-            <a href="#" class="btn">Register</a>
-            <a href="#" class="btn">Login</a>
-        </div>
     </div>
 
     <!-- Main Content -->
@@ -177,21 +157,24 @@
         <h2>🎯 Welcome to Bounty Game 🎯</h2>
 
         <!-- Game Image -->
-        <img class="game-image" src="123.jpeg" alt="Bounty Game Image">
-        
-        <!-- Register Button -->
-        <button class="https://bountygame.in/#/register?invitationCode=131821730748">Register on Bounty Game</button>
+        <img class="game-image" src="123daughter.jpg" alt="Bounty Game Image">
+
+        <!-- Buttons Section -->
+        <div class="button-container">
+            <button class="https://bountygame.in/#/register?invitationCode=131821730748">Register</button>
+            <button class="btn">Login</button>
+        </div>
 
         <!-- Game Information -->
         <div class="info">
             <p>✅ <b>Game Name:</b> Bounty Game</p>
-            <p>✅ <b>Prediction Group:</b> <a class="https://t.me/earningguy6" href="https://t.me/joinchat">Join Telegram</a></p>
-            <p>✅ <b>Referral Code:</b> 131821730748</p>
+            <p>✅ <b>Prediction Group:</b> <a class="telegram-link" href="https://t.me/earningguy6">Join Telegram</a></p>
+            <p>✅ <b>Referral Code:</b> 9876543210</p>
             <p>✅ <b>Top Rated Game:</b> Bounty Game</p>
             <p>✅ <b>App Size:</b> 6.5 MB</p>
         </div>
 
-        <p>Play exciting games like **Wingo, Lottery, Slots, Casino & Aviator**. Register now and win big!</p>
+        <p>Play exciting games like <strong>Wingo, Lottery, Slots, Casino & Aviator</strong>. Register now and win big!</p>
     </div>
 
 </body>
