@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earning Loot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 300px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            background: #4CAF50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .balance-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: black;
+        }
+
+        .close-btn {
+            float: right;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Panel -->
+    <div id="loginPanel" class="panel">
+        <h2>Login</h2>
+        <input type="text" id="loginMobile" placeholder="Mobile Number">
+        <input type="password" id="loginPassword" placeholder="Password">
+        <button id="loginButton">Login</button>
+        <p>Don't have an account? <button id="registerButton">Register</button></p>
+    </div>
+
+    <!-- Register Panel -->
+    <div id="registerPanel" class="panel" style="display: none;">
+        <h2>Register</h2>
+        <input type="text" id="registerMobile" placeholder="Mobile Number">
+        <input type="password" id="registerPassword" placeholder="Password">
+        <button id="registerSubmitButton">Register</button>
+        <p>Already have an account? <button id="backToLoginButton">Login</button></p>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="panel" style="display: none;">
+        <h2>Dashboard</h2>
+        <div class="balance-box">
+            <p>Balance: ₹<span id="balance">0</span></p>
+        </div>
+        <button id="earnButton">Earn ₹5</button>
+        <button id="withdrawButton">Withdraw</button>
+        <button id="logoutButton">Logout</button>
+    </div>
+
+    <!-- Withdraw Popup -->
+    <div id="withdrawPopup" class="popup">
+        <div class="popup-content">
+            <span class="close-btn" id="closeWithdrawPopup">×</span>
+            <h2>Withdraw</h2>
+            <input type="number" id="withdrawAmount" placeholder="Amount">
+            <input type="text" id="withdrawName" placeholder="Your Name">
+            <input type="text" id="withdrawAccount" placeholder="Bank Account">
+            <input type="text" id="withdrawIFSC" placeholder="IFSC Code">
+            <button id="submitWithdrawButton">Submit</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script>
+        // Supabase Initialization
+        const supabaseUrl = 'https://uvhjusorsgzpbzlpuysr.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2aGp1c29yc2d6cGJ6bHB1eXNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIxMzk0OTYsImV4cCI6MjA1NzcxNTQ5Nn0.UuNOfsA6m8F5CE_HbNUc8aMg92Xcgrtqs5yTTGwjqWI';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // DOM Elements
+        const loginPanel = document.getElementById('loginPanel');
+        const registerPanel = document.getElementById('registerPanel');
+        const dashboard = document.getElementById('dashboard');
+        const balanceDisplay = document.getElementById('balance');
+        const withdrawPopup = document.getElementById('withdrawPopup');
+
+        // Login Function
+        document.getElementById('loginButton').addEventListener('click', async () => {
+            const mobile = document.getElementById('loginMobile').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const { data, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('mobile', mobile)
+                .eq('password', password);
+
+            if (error) {
+                alert('Login failed: ' + error.message);
+            } else if (data.length > 0) {
+                const user = data[0];
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                showDashboard(user);
+            } else {
+                alert('Invalid mobile or password');
+            }
+        });
+
+        // Register Function
+        document.getElementById('registerSubmitButton').addEventListener('click', async () => {
+            const mobile = document.getElementById('registerMobile').value;
+            const password = document.getElementById('registerPassword').value;
+
+            const { data, error } = await supabase
+                .from('users')
+                .insert([{ mobile, password, balance: 0, lastEarned: null }]);
+
+            if (error) {
+                alert('Registration failed: ' + error.message);
+            } else {
+                alert('Registration successful! Please login.');
+                showLogin();
+            }
+        });
+
+        // Earn Function
+        document.getElementById('earnButton').addEventListener('click', async () => {
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            const currentTime = new Date().getTime();
+
+            if (!user.lastEarned || (currentTime - user.lastEarned) >= 24 * 60 * 60 * 1000) {
+                const newBalance = user.balance + 5;
+                const { error } = await supabase
+                    .from('users')
+                    .update({ balance: newBalance, lastEarned: currentTime })
+                    .eq('mobile', user.mobile);
+
+                if (error) {
+                    alert('Error updating balance: ' + error.message);
+                } else {
+                    user.balance = newBalance;
+                    user.lastEarned = currentTime;
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                    updateBalance(newBalance);
+                    alert('₹5 added to your balance!');
+                }
+            } else {
+                alert('You can only earn once every 24 hours.');
+            }
+        });
+
+        // Withdraw Function
+        document.getElementById('withdrawButton').addEventListener('click', () => {
+            withdrawPopup.style.display = 'flex';
+        });
+
+        document.getElementById('submitWithdrawButton').addEventListener('click', async () => {
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            const name = document.getElementById('withdrawName').value;
+            const account = document.getElementById('withdrawAccount').value;
+            const ifsc = document.getElementById('withdrawIFSC').value;
+
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            if (amount > user.balance) {
+                alert('Insufficient balance');
+                return;
+            }
+
+            const newBalance = user.balance - amount;
+            const { error } = await supabase
+                .from('users')
+                .update({ balance: newBalance })
+                .eq('mobile', user.mobile);
+
+            if (error) {
+                alert('Error updating balance: ' + error.message);
+            } else {
+                user.balance = newBalance;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                updateBalance(newBalance);
+                withdrawPopup.style.display = 'none';
+                alert('Withdrawal request submitted!');
+            }
+        });
+
+        // Logout Function
+        document.getElementById('logoutButton').addEventListener('click', () => {
+            localStorage.removeItem('currentUser');
+            showLogin();
+        });
+
+        // Close Withdraw Popup
+        document.getElementById('closeWithdrawPopup').addEventListener('click', () => {
+            withdrawPopup.style.display = 'none';
+        });
+
+        // Switch to Register Panel
+        document.getElementById('registerButton').addEventListener('click', () => {
+            loginPanel.style.display = 'none';
+            registerPanel.style.display = 'block';
+        });
+
+        // Switch to Login Panel
+        document.getElementById('backToLoginButton').addEventListener('click', () => {
+            registerPanel.style.display = 'none';
+            loginPanel.style.display = 'block';
+        });
+
+        // Show Dashboard
+        function showDashboard(user) {
+            loginPanel.style.display = 'none';
+            registerPanel.style.display = 'none';
+            dashboard.style.display = 'block';
+            updateBalance(user.balance);
+        }
+
+        // Show Login Panel
+        function showLogin() {
+            loginPanel.style.display = 'block';
+            registerPanel.style.display = 'none';
+            dashboard.style.display = 'none';
+        }
+
+        // Update Balance Display
+        function updateBalance(balance) {
+            balanceDisplay.innerText = balance.toFixed(2);
+        }
+
+        // Check if user is already logged in
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (currentUser) {
+            showDashboard(currentUser);
+        } else {
+            showLogin();
+        }
+    </script>
+</body>
+</html>
